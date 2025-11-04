@@ -1,0 +1,5 @@
+{
+  "name": "Tachometer Real-time Monitor",
+  "description": "A web application to monitor real-time and historical data from a tachometer. Users can sign in, connect to a specific device via its ID, and view RPM data on a live gauge and historical chart. It also features a simulated AI analysis of engine performance.",
+  "requestFramePermissions": []
+}

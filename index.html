@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tachometer Real-time Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'background-dark': '#0A0A0A',
+              'panel-dark': 'rgba(10, 10, 10, 0.3)',
+              'cyan-tech': {
+                '100': '#E0FEFA',
+                '200': '#9BFCF3',
+                '300': '#00F5D4',
+                '400': '#00B29A',
+                '500': '#008F7A',
+              },
+              'off-white': '#E6E6E6',
+            },
+            fontFamily: {
+              'sans': ['Inter', 'sans-serif'],
+              'mono': ['Fira Code', 'monospace'],
+            },
+            boxShadow: {
+              'glow-cyan': '0 0 15px rgba(0, 245, 212, 0.4), 0 0 5px rgba(0, 245, 212, 0.6)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .ripple-container {
+        position: relative;
+        overflow: hidden;
+      }
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple-animation 600ms linear;
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+      @keyframes ripple-animation {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (using compat libraries for global access) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "tsparticles-slim": "https://aistudiocdn.com/tsparticles-slim@^2.12.0",
+    "react-tsparticles": "https://aistudiocdn.com/react-tsparticles@^2.12.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.3.19",
+    "tsparticles-engine": "https://aistudiocdn.com/tsparticles-engine@^2.12.0",
+    "gsap": "https://aistudiocdn.com/gsap@^3.12.5"
+  }
+}
+</script>
+</head>
+  <body class="bg-background-dark text-off-white bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-background-dark to-background-dark">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
