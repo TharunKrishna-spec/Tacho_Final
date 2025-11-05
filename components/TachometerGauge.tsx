@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { motion, useSpring, useTransform } from 'framer-motion';
 
 interface TachometerGaugeProps {
   rpm: number;
@@ -6,44 +7,22 @@ interface TachometerGaugeProps {
 }
 
 const TachometerGauge: React.FC<TachometerGaugeProps> = ({ rpm, maxRpm = 1000 }) => {
-  const normalizedRpm = Math.min(Math.max(rpm, 0), maxRpm);
-  const angle = (normalizedRpm / maxRpm) * 270 - 135; // Map RPM to a 270 degree arc
+  const animatedRpmSpring = useSpring(rpm, { 
+    stiffness: 80, 
+    damping: 25,
+    mass: 0.8
+  });
+
+  useEffect(() => {
+    animatedRpmSpring.set(rpm);
+  }, [rpm, animatedRpmSpring]);
+
+  const angle = useTransform(animatedRpmSpring, [0, maxRpm], [-135, 135]);
+  const isRedline = rpm >= maxRpm * 0.8;
+  const roundedRpmText = useTransform(animatedRpmSpring, (v) => Math.round(v));
 
   const redlineStart = maxRpm * 0.8;
-  const isRedline = normalizedRpm >= redlineStart;
 
-  const ticks = Array.from({ length: 11 }, (_, i) => {
-    const tickRpm = i * (maxRpm / 10);
-    const tickAngle = (tickRpm / maxRpm) * 270 - 135;
-    const isRedlineTick = tickRpm >= redlineStart;
-    
-    // Tick lines
-    const x1 = 50 + 40 * Math.cos((tickAngle * Math.PI) / 180);
-    const y1 = 50 + 40 * Math.sin((tickAngle * Math.PI) / 180);
-    const x2 = 50 + 45 * Math.cos((tickAngle * Math.PI) / 180);
-    const y2 = 50 + 45 * Math.sin((tickAngle * Math.PI) / 180);
-    
-    // Tick labels
-    const labelRadius = 34;
-    const labelX = 50 + labelRadius * Math.cos((tickAngle * Math.PI) / 180);
-    const labelY = 50 + labelRadius * Math.sin((tickAngle * Math.PI) / 180);
-    
-    return (
-      <g key={i}>
-        <line x1={x1} y1={y1} x2={x2} y2={y2} className={isRedlineTick ? "stroke-red-500" : "stroke-gray-600"} strokeWidth="1.5" />
-        { i > 0 && i % 2 === 0 && 
-            <text 
-                x={labelX} y={labelY} 
-                textAnchor="middle" 
-                alignmentBaseline="middle" 
-                className="fill-gray-400 text-[6px] font-sans font-bold">
-                {i}
-            </text>
-        }
-      </g>
-    );
-  });
-  
   const arcPath = (startAngle: number, endAngle: number, radius: number) => {
     const start = {
       x: 50 + radius * Math.cos(startAngle * Math.PI / 180),
@@ -59,12 +38,65 @@ const TachometerGauge: React.FC<TachometerGaugeProps> = ({ rpm, maxRpm = 1000 })
   
   const redlineStartAngle = (redlineStart / maxRpm) * 270 - 135;
 
+  const majorTicks = Array.from({ length: 11 }, (_, i) => {
+    const tickRpm = i * (maxRpm / 10);
+    const tickAngle = (tickRpm / maxRpm) * 270 - 135;
+    const isRedlineTick = tickRpm >= redlineStart;
+    
+    const x1 = 50 + 40 * Math.cos((tickAngle * Math.PI) / 180);
+    const y1 = 50 + 40 * Math.sin((tickAngle * Math.PI) / 180);
+    const x2 = 50 + 45 * Math.cos((tickAngle * Math.PI) / 180);
+    const y2 = 50 + 45 * Math.sin((tickAngle * Math.PI) / 180);
+    
+    const labelRadius = 34;
+    const labelX = 50 + labelRadius * Math.cos((tickAngle * Math.PI) / 180);
+    const labelY = 50 + labelRadius * Math.sin((tickAngle * Math.PI) / 180);
+    
+    return (
+      <g key={`major-${i}`}>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} className={isRedlineTick ? "stroke-red-500/80" : "stroke-gray-500"} strokeWidth="1.5" />
+        { i > 0 && i % 2 === 0 && 
+            <text 
+                x={labelX} y={labelY} 
+                textAnchor="middle" 
+                alignmentBaseline="middle" 
+                className="fill-gray-400 text-[6px] font-sans font-bold">
+                {i}
+            </text>
+        }
+      </g>
+    );
+  });
+
+  const minorTicks = Array.from({ length: 51 }, (_, i) => {
+    if (i % 5 === 0) return null; // Skip major tick positions
+    const tickRpm = i * (maxRpm / 50);
+    const tickAngle = (tickRpm / maxRpm) * 270 - 135;
+    if (tickAngle > 135) return null;
+
+    const isRedlineTick = tickRpm >= redlineStart;
+
+    const x1 = 50 + 42 * Math.cos((tickAngle * Math.PI) / 180);
+    const y1 = 50 + 42 * Math.sin((tickAngle * Math.PI) / 180);
+    const x2 = 50 + 45 * Math.cos((tickAngle * Math.PI) / 180);
+    const y2 = 50 + 45 * Math.sin((tickAngle * Math.PI) / 180);
+
+    return (
+        <line key={`minor-${i}`} x1={x1} y1={y1} x2={x2} y2={y2} className={isRedlineTick ? "stroke-red-500/50" : "stroke-gray-700"} strokeWidth="0.75" />
+    );
+  });
+  
+  const activeArcD = useTransform(animatedRpmSpring, [0.01, maxRpm], (latestRpm) => {
+    const rpmAngle = (Math.min(Math.max(latestRpm, 0), maxRpm) / maxRpm) * 270 - 135;
+    return arcPath(-135, rpmAngle, 42.5);
+  });
+
   return (
     <div className="w-full max-w-xs aspect-square relative">
       <svg viewBox="0 0 100 100" className="w-full h-full">
         <defs>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
                 <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -74,59 +106,80 @@ const TachometerGauge: React.FC<TachometerGaugeProps> = ({ rpm, maxRpm = 1000 })
                 <stop offset="0%" stopColor="#9BFCF3" />
                 <stop offset="100%" stopColor="#00F5D4" />
             </linearGradient>
+            <linearGradient id="redlineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#FBBF24" />
+                <stop offset="100%" stopColor="#EF4444" />
+            </linearGradient>
+            <radialGradient id="dialGradient" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="#111827" />
+                <stop offset="100%" stopColor="#0A0A0A" />
+            </radialGradient>
         </defs>
         
         {/* Background & Bezel */}
-        <circle cx="50" cy="50" r="48" className="fill-black/30" />
-        <circle cx="50" cy="50" r="46" className="fill-none stroke-black/50" strokeWidth="1" />
-        <circle cx="50" cy="50" r="45" className="fill-background-dark" />
+        <circle cx="50" cy="50" r="50" className="fill-gray-900" />
+        <circle cx="50" cy="50" r="48" className="fill-black/50" />
+        <circle cx="50" cy="50" r="47" stroke="url(#gaugeGradient)" strokeOpacity="0.3" strokeWidth="0.5" fill="none" />
+        <circle cx="50" cy="50" r="45" fill="url(#dialGradient)" />
         
         {/* Gauge Track */}
         <path
           d={arcPath(-135, 135, 42.5)}
           fill="none"
-          className="stroke-gray-800"
+          className="stroke-black/50"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+
+        {/* Redline track */}
+        <path
+          d={arcPath(redlineStartAngle, 135, 42.5)}
+          fill="none"
+          stroke="url(#redlineGradient)"
+          strokeOpacity="0.8"
           strokeWidth="8"
           strokeLinecap="round"
         />
 
         {/* Active Gauge Arc */}
-        {normalizedRpm > 0 && (
-             <path
-                d={arcPath(-135, angle, 42.5)}
-                fill="none"
-                stroke="url(#gaugeGradient)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                style={{filter: 'url(#glow)'}}
-             />
-        )}
-        
-        {/* Redline track */}
-        <path
-          d={arcPath(redlineStartAngle, 135, 42.5)}
-          fill="none"
-          className="stroke-red-600/60"
-          strokeWidth="8"
-          strokeLinecap="round"
+        <motion.path
+            d={activeArcD}
+            fill="none"
+            stroke="url(#gaugeGradient)"
+            strokeWidth="8"
+            strokeLinecap="round"
+            style={{filter: 'url(#glow)'}}
         />
         
         {/* Ticks */}
-        {ticks}
-        <text x="50" y="30" textAnchor="middle" className="fill-gray-500 text-[6px] font-mono tracking-widest">x100 RPM</text>
+        {majorTicks}
+        {minorTicks}
+        <text x="50" y="30" textAnchor="middle" className="fill-gray-500 text-[6px] font-mono tracking-widest">x1000 RPM</text>
 
         {/* Needle */}
-        <g transform={`rotate(${angle} 50 50)`} style={{ transition: 'transform 0.5s ease-out' }}>
-          <path d="M 50 10 L 52 50 L 48 50 Z" className="fill-cyan-tech-300" style={{filter: 'drop-shadow(0 0 4px #00F5D4)'}} />
-        </g>
+        <motion.g style={{ rotate: angle, transformOrigin: '50% 50%' }}>
+          <path d="M 50 48 L 49 12 C 49.5 11, 50.5 11, 51 12 L 50 48 Z" className="fill-cyan-tech-300" style={{filter: 'drop-shadow(0 0 4px #00F5D4)'}} />
+        </motion.g>
         
         {/* Needle pivot */}
-        <circle cx="50" cy="50" r="5" className="fill-gray-300" />
-        <circle cx="50" cy="50" r="3" className="fill-background-dark" />
+        <circle cx="50" cy="50" r="5" className="fill-gray-800" />
+        <circle cx="50" cy="50" r="4" className="fill-gray-300" />
+        <circle cx="50" cy="50" r="2" className="fill-background-dark" />
         
         {/* Digital Readout */}
-        <text x="50" y="65" textAnchor="middle" className={`text-[1.25rem] font-mono font-bold tracking-wider transition-colors duration-300 ${isRedline ? 'fill-red-500' : 'fill-off-white'}`} style={{filter: `drop-shadow(0 0 5px ${isRedline ? '#EF4444' : '#00F5D4'})`}}>{Math.round(rpm)}</text>
-        <text x="50" y="80" textAnchor="middle" className="fill-gray-400 text-xs font-mono tracking-widest">RPM</text>
+        <rect x="35" y="60" width="30" height="15" rx="3" fill="black" opacity="0.3" />
+        <motion.text 
+            x="50" y="70" 
+            textAnchor="middle" 
+            className={`text-sm font-mono font-bold tracking-wider transition-colors duration-300 ${isRedline ? 'fill-red-400' : 'fill-off-white'}`} 
+            style={{filter: `drop-shadow(0 0 5px ${isRedline ? '#F87171' : '#00F5D4'})`}}
+        >
+            {roundedRpmText}
+        </motion.text>
+        <text x="50" y="82" textAnchor="middle" className="fill-gray-400 text-[8px] font-mono tracking-widest">RPM</text>
+
+        {/* Glass Glare Effect */}
+        <path d={arcPath(-120, -60, 45)} fill="white" opacity="0.08" />
       </svg>
     </div>
   );
