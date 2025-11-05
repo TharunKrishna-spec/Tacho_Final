@@ -1,4 +1,5 @@
-import * as React from 'react';
+// FIX: Changed the React import to a default import to align with the project's configuration and resolve the type error.
+import React from 'react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -9,15 +10,9 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  // FIX: Reverted to using a constructor for state initialization. 
-  // The class property syntax was causing an issue where `this.props` was not being recognized.
-  // Using a constructor ensures the component is properly initialized.
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = {
-      hasError: false,
-    };
-  }
+  // FIX: The constructor was causing issues with 'this' context. 
+  // It has been replaced with a state class property for initialization, which is a more modern and safer approach.
+  state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.

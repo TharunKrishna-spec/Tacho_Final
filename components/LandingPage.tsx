@@ -61,12 +61,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     return () => clearInterval(intervalId);
   }, [words.length]);
 
-  const [animatedRpm, setAnimatedRpm] = useState(450);
+  const [animatedRpm, setAnimatedRpm] = useState(3500);
 
   useEffect(() => {
       const interval = setInterval(() => {
-          setAnimatedRpm(Math.floor(Math.random() * 600) + 200); // Random RPM between 200 and 800
-      }, 2000);
+          // More dynamic, wave-like RPM for the gauge
+          const newRpm = 3500 + Math.sin(Date.now() / 1000) * 400 + (Math.random() - 0.5) * 300;
+          setAnimatedRpm(newRpm);
+      }, 1500);
       return () => clearInterval(interval);
   }, []);
 
@@ -74,9 +76,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       const data: TachometerDataPoint[] = [];
       const now = Date.now();
       for (let i = 30; i > 0; i--) {
+          // More complex wave for a "wavey" look in the 3-4k range
+          const rpm = 3500 + Math.sin(i * 0.4) * 500 + Math.cos(i * 0.9) * 200 + (Math.random() * 150 - 75);
           data.push({
               timestamp: now - i * 1000,
-              rpm: 450 + Math.sin(i * 0.5) * 200 + Math.random() * 100,
+              rpm: Math.round(rpm),
           });
       }
       return data;
@@ -209,7 +213,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             >
               <div className="grid grid-cols-2 gap-4 items-center">
                   <div className="col-span-1">
-                      <TachometerGauge rpm={animatedRpm} maxRpm={1000} />
+                      <TachometerGauge rpm={animatedRpm} maxRpm={8000} />
                   </div>
                   <div className="col-span-1 h-48 -ml-4">
                       <HistoryChart data={mockChartData} />

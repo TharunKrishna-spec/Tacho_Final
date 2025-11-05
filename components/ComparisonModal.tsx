@@ -50,7 +50,7 @@ const ComparisonModal: React.FC<ComparisonModalProps> = ({ sessions, onClose }) 
               />
               <YAxis 
                 stroke="#888" 
-                domain={[0, 1000]} 
+                domain={[0, 8000]} 
                 tick={{ fill: '#888', fontSize: 12 }} 
                 label={{ value: 'RPM', angle: -90, position: 'insideLeft', fill: '#888' }}
               />

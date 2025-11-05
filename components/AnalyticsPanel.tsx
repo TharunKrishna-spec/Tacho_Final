@@ -6,15 +6,16 @@ interface AnalyticsPanelProps {
   data: TachometerDataPoint[];
 }
 
-const BINS = [0, 200, 400, 600, 800, 1000];
+const BINS = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
 const COLORS = ['#CCFBF1', '#99F6E4', '#5EEAD4', '#2DD4BF', '#14B8A6', '#0D9488', '#0F766E', '#115E59'];
 
 const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ data }) => {
   const distributionData = useMemo(() => {
     const bins = BINS.slice(0, -1).map((binStart, index) => {
       const binEnd = BINS[index + 1];
+      const name = index === 0 ? `0-${binEnd}` : `${binStart/1000}k-${binEnd/1000}k`;
       return {
-        name: `${binStart}-${binEnd}`,
+        name: name,
         count: 0,
       };
     });
@@ -22,7 +23,7 @@ const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ data }) => {
     if (data.length > 0) {
         data.forEach(point => {
             for (let i = 0; i < BINS.length - 1; i++) {
-                if (point.rpm > BINS[i] && point.rpm <= BINS[i + 1]) {
+                if (point.rpm >= BINS[i] && point.rpm < BINS[i + 1]) {
                     bins[i].count++;
                     break;
                 }

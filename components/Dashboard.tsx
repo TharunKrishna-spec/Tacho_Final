@@ -129,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         >
           <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={itemVariants}>
               <div className="md:col-span-1 bg-panel-dark backdrop-blur-xl border border-cyan-tech-300/20 rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center">
-                <TachometerGauge rpm={currentRPM} maxRpm={1000} />
+                <TachometerGauge rpm={currentRPM} maxRpm={8000} />
               </div>
               
               <div className="md:col-span-2 bg-panel-dark backdrop-blur-xl border border-cyan-tech-300/20 rounded-2xl shadow-lg p-6">

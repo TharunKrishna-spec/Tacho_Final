@@ -30,14 +30,14 @@ const promiseWithTimeout = <T,>(
   });
 
 /**
- * Checks if a device node exists in the Firebase Realtime Database.
+ * Checks if a device node has a data log in the Firebase Realtime Database.
  * This is used to validate a Device ID before proceeding to the dashboard.
  * @param deviceId The ID of the device to check.
- * @returns A promise that resolves to true if the device exists, false otherwise.
+ * @returns A promise that resolves to true if the device's data log exists, false otherwise.
  */
 export const checkDeviceExists = async (deviceId: string): Promise<boolean> => {
-  console.log(`Checking for existence of device: ${deviceId}`);
-  const deviceRef = database.ref(`devices/${deviceId}`);
+  console.log(`Checking for existence of device data: devices/${deviceId}/data`);
+  const deviceRef = database.ref(`devices/${deviceId}/data`);
   try {
     const snapshot = await promiseWithTimeout(
       deviceRef.get(),

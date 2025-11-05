@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ReferenceLine, Label } from 'recharts';
 import { TachometerDataPoint } from '../types';
 
 interface HistoryChartProps {
@@ -22,6 +22,12 @@ const HistoryChart: React.FC<HistoryChartProps> = ({ data }) => {
       ...d,
       time: Math.round((d.timestamp - lastTimestamp) / 1000),
     }));
+  }, [data]);
+
+  const avgRPM = useMemo(() => {
+    if (!data || data.length === 0) return 0;
+    const sum = data.reduce((acc, curr) => acc + curr.rpm, 0);
+    return sum / data.length;
   }, [data]);
 
   const handleReset = () => {
@@ -115,7 +121,7 @@ const HistoryChart: React.FC<HistoryChartProps> = ({ data }) => {
                 tick={{ fill: '#888', fontSize: 12 }} 
                 tickFormatter={(tick) => Math.round(tick).toString()}
             />
-            <YAxis stroke="#888" domain={[0, 1000]} tick={{ fill: '#888', fontSize: 12 }} />
+            <YAxis stroke="#888" domain={[0, 8000]} tick={{ fill: '#888', fontSize: 12 }} />
             <Tooltip
                 contentStyle={{
                     backgroundColor: 'rgba(10, 10, 10, 0.8)',
@@ -128,6 +134,11 @@ const HistoryChart: React.FC<HistoryChartProps> = ({ data }) => {
                 labelFormatter={(value) => `${Number(value).toFixed(1)}s`}
                 formatter={(value: number) => [value.toFixed(0), 'RPM']}
             />
+            {avgRPM > 0 && (
+                <ReferenceLine y={avgRPM} stroke="#F59E0B" strokeDasharray="4 4">
+                    <Label value={`Avg: ${Math.round(avgRPM)}`} position="insideTopRight" fill="#F59E0B" fontSize={10} fontWeight="bold" />
+                </ReferenceLine>
+            )}
             <Area 
                 type="natural" 
                 dataKey="rpm" 
