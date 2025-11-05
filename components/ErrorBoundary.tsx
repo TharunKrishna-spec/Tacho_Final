@@ -1,4 +1,4 @@
-// FIX: Refactored component to use `import * as React` and `React.Component` to resolve a TypeScript error where `this.props` was not being correctly identified on the class instance. This approach ensures proper type inheritance.
+// FIX: Replaced the class property initializer for state with a constructor. This correctly initializes `this.props` via `super(props)` and resolves an error where the `props` property was not found on the component instance.
 import * as React from 'react';
 
 interface ErrorBoundaryProps {
@@ -10,9 +10,12 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  public state: State = {
-    hasError: false,
-  };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+    };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
